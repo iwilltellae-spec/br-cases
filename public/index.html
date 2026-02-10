@@ -2,93 +2,98 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BR Case Simulator</title>
+
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Шрифт Montserrat (как в игре) -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap"
+          rel="stylesheet">
 </head>
 <body>
 
-    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ (С твоей фоткой) -->
-    <div id="welcome-screen">
-        <div class="bg-overlay"></div>
-        <div class="content">
-            <h1 class="main-title">BLACK<br><span>RUSSIA</span></h1>
-            <p class="subtitle">Испытай удачу и выиграй призы!</p>
-            <button class="start-btn" onclick="startGame()">НАЧАТЬ ОТКРЫВАТЬ</button>
+<!-- ЭКРАН 1: ПРИВЕТСТВИЕ -->
+<div id="welcome-screen">
+    <div class="bg-overlay"></div>
+    <div class="content">
+        <h1 class="main-title">BLACK<br><span>RUSSIA</span></h1>
+        <p class="subtitle">Игровые кейсы из игры Black Russia</p>
+        <button class="start-btn" onclick="startGame()">НАЧАТЬ ОТКРЫВАТЬ</button>
+    </div>
+</div>
+
+<!-- ЭКРАН 2: ПРИЛОЖЕНИЕ -->
+<div id="app" class="hidden">
+
+    <!-- Шапка -->
+    <header>
+        <div class="logo">BR CASE</div>
+        <div class="balance-box">
+            <span id="balance">0</span> BC
+        </div>
+    </header>
+
+    <!-- ГЛАВНЫЙ ЭКРАН: КЕЙСЫ -->
+    <main id="main-screen">
+        <div class="section-title">КЕЙСЫ</div>
+        <div class="cases-grid">
+            <!-- Кейс 1 -->
+            <div class="case-card common" onclick="openCaseMenu('novice')">
+                <div class="case-badge">ОБЫЧНЫЙ</div>
+                <img src="assets/case_common.png" alt="Кейс Новичка">
+                <div class="case-info">
+                    <div class="case-name">НОВИЧОК</div>
+                    <div class="case-price">1000 BC</div>
+                </div>
+            </div>
+            <!-- Кейс 2 -->
+            <div class="case-card rare" onclick="openCaseMenu('rich')">
+                <div class="case-badge red">VIP</div>
+                <img src="assets/case_rare.png" alt="Особый кейс">
+                <div class="case-info">
+                    <div class="case-name">ОСОБЫЙ</div>
+                    <div class="case-price text-red">5000 BC</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ЭКРАН: ИНВЕНТАРЬ -->
+    <main id="inventory-screen" class="hidden">
+        <div class="section-title">ИНВЕНТАРЬ</div>
+        <div id="inventory-list" class="inventory-list">
+            <!-- Заполняется из JS -->
+        </div>
+    </main>
+
+    <!-- ОКНО ОТКРЫТИЯ КЕЙСА (РУЛЕТКА) -->
+    <div id="open-screen" class="hidden">
+        <div class="roulette-wrapper">
+            <div class="arrow-down">▼</div>
+            <div class="roulette-window">
+                <div id="roulette-track"></div>
+            </div>
+        </div>
+
+        <div id="win-message" class="hidden">
+            <h2>ТВОЙ КУШ!</h2>
+            <img id="win-img" src="" alt="">
+            <h3 id="win-name">...</h3>
+            <div class="actions">
+                <button class="btn btn-red" onclick="closeOpenScreen()">ЗАБРАТЬ</button>
+                <button class="btn btn-dark" onclick="sellLastItem()">РАСПЫЛИТЬ</button>
+            </div>
         </div>
     </div>
 
-    <!-- ЭКРАН 2: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
-    <div id="app" class="hidden">
-        
-        <!-- Шапка -->
-        <header>
-            <div class="logo">BR CASE</div>
-            <div class="balance-box">
-                <span id="balance">0</span> BC
-            </div>
-        </header>
+    <!-- НИЖНЕЕ МЕНЮ -->
+    <footer>
+        <button class="nav-item active" id="tab-main" onclick="switchTab('main')">ГЛАВНАЯ</button>
+        <button class="nav-item" id="tab-inventory" onclick="switchTab('inventory')">ИНВЕНТАРЬ</button>
+    </footer>
+</div>
 
-        <div class="user-hello">
-            Привет, <span id="username">Игрок</span>!
-        </div>
-
-        <!-- Список кейсов -->
-        <main id="main-screen">
-            <div class="cases-grid">
-                <!-- Кейс 1 -->
-                <div class="case-card common" onclick="openCaseMenu('novice')">
-                    <div class="case-badge">ОБЫЧНЫЙ</div>
-                    <img src="assets/case_common.png" alt="Кейс" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9329/9329733.png'">
-                    <div class="case-info">
-                        <div class="case-name">НОВИЧОК</div>
-                        <div class="case-price">1000 BC</div>
-                    </div>
-                </div>
-                <!-- Кейс 2 -->
-                <div class="case-card rare" onclick="openCaseMenu('rich')">
-                    <div class="case-badge red">VIP</div>
-                    <img src="assets/case_rare.png" alt="Кейс" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9329/9329733.png'">
-                    <div class="case-info">
-                        <div class="case-name">ОСОБЫЙ</div>
-                        <div class="case-price text-red">5000 BC</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Анимация открытия (Рулетка) -->
-        <div id="open-screen" class="hidden">
-            <div class="roulette-wrapper">
-                <div class="arrow-down">▼</div>
-                <div class="roulette-window">
-                    <div id="roulette-track"></div>
-                </div>
-            </div>
-
-            <!-- Окно выигрыша -->
-            <div id="win-message" class="hidden">
-                <div class="win-light"></div>
-                <h2>ТВОЙ КУШ!</h2>
-                <img id="win-img" src="" alt="">
-                <h3 id="win-name">...</h3>
-                <div class="actions">
-                    <button class="btn btn-red" onclick="closeOpenScreen()">ЗАБРАТЬ</button>
-                    <button class="btn btn-dark" onclick="sellLastItem()">РАСПЫЛИТЬ</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Меню снизу -->
-        <footer>
-            <div class="nav-item active">ГЛАВНАЯ</div>
-            <div class="nav-item" style="opacity: 0.5;">ИНВЕНТАРЬ</div>
-        </footer>
-    </div>
-
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
