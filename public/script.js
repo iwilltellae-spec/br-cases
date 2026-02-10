@@ -1,59 +1,62 @@
 const tg = window.Telegram.WebApp;
-tg.expand(); // На весь экран
+tg.expand();
 
-// Переменные состояния
 let user = null;
-let currentCaseId = null;
 let isSpinning = false;
+const API_URL = ''; // Если на Render, оставляем пустым
 
-// API URL (Если локально - пустая строка, если на сервере - адрес сервера)
-// Поскольку у нас сервер раздает статику, можно оставить пустым
-const API_URL = ''; 
-
-// 1. ИНИЦИАЛИЗАЦИЯ (ПРИ ВХОДЕ)
+// 1. ИНИЦИАЛИЗАЦИЯ
 window.onload = async () => {
-    setTimeout(() => {
-        // Убираем заставку через 2 сек
-        document.getElementById('splash-screen').style.opacity = '0';
-        setTimeout(() => document.getElementById('splash-screen').remove(), 500);
-        document.getElementById('app').style.display = 'block';
-    }, 2000);
-
-    // Авторизация
-    const tgUser = tg.initDataUnsafe.user;
-    // Если тестируешь в браузере без ТГ, раскомментируй строку ниже:
-    // const tgUser = { id: 12345, username: 'TestUser' };
-
-    if (tgUser) {
-        try {
-            const response = await fetch(`${API_URL}/api/auth`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    telegram_id: tgUser.id, 
-                    username: tgUser.username 
-                })
-            });
-            user = await response.json();
-            updateUI();
-        } catch (e) {
-            alert('Ошибка соединения с сервером Black Russia');
-        }
-    } else {
-        alert('Зайдите через Телеграм!');
+    // Ждем, пока юзер нажмет кнопку "НАЧАТЬ"
+    // Но данные подгружаем сразу в фоне
+    const tgUser = tg.initDataUnsafe?.user || { id: 111111, username: 'BrowserTest' };
+    
+    try {
+        const response = await fetch(`${API_URL}/api/auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                telegram_id: tgUser.id, 
+                username: tgUser.username 
+            })
+        });
+        user = await response.json();
+        updateUI();
+    } catch (e) {
+        console.error('Ошибка сервера', e);
     }
 };
 
+// Функция кнопки "НАЧАТЬ"
+function startGame() {
+    if (!user) {
+        tg.showAlert('Соединение с сервером...');
+        return;
+    }
+    // Плавно скрываем приветствие
+    const welcome = document.getElementById('welcome-screen');
+    welcome.style.transition = 'opacity 0.5s';
+    welcome.style.opacity = '0';
+    
+    setTimeout(() => {
+        welcome.style.display = 'none';
+        document.getElementById('app').classList.remove('hidden');
+    }, 500);
+}
+
 function updateUI() {
-    document.getElementById('username').innerText = user.username.toUpperCase();
-    document.getElementById('balance').innerText = user.balance;
+    if(!user) return;
+    document.getElementById('username').innerText = user.username;
+    document.getElementById('balance').innerText = user.balance.toLocaleString(); // Красивые цифры с пробелами
 }
 
 // 2. ОТКРЫТИЕ КЕЙСА
 async function openCaseMenu(caseKey) {
     if (isSpinning) return;
     
-    // Запрос к серверу
+    // Вибрация при нажатии
+    tg.HapticFeedback.impactOccurred('medium');
+
     const response = await fetch(`${API_URL}/api/open`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,77 +65,78 @@ async function openCaseMenu(caseKey) {
 
     const data = await response.json();
     if (data.error) {
-        tg.showAlert(data.error); // Нативный алерт телеграма
+        tg.showAlert(data.error);
         return;
     }
 
-    // Успех - запускаем анимацию
-    user.balance = data.newBalance; // Обновляем баланс локально сразу (визуально потом)
+    user.balance = data.newBalance;
+    updateUI(); // Баланс списывается сразу
     startRoulette(data.wonItem);
 }
 
 // 3. АНИМАЦИЯ РУЛЕТКИ
 function startRoulette(wonItem) {
     isSpinning = true;
-    document.getElementById('open-screen').classList.remove('hidden');
+    const openScreen = document.getElementById('open-screen');
+    openScreen.classList.remove('hidden');
     document.getElementById('win-message').classList.add('hidden');
+    
     const track = document.getElementById('roulette-track');
     track.innerHTML = '';
     track.style.transition = 'none';
     track.style.transform = 'translateX(0)';
 
-    // Генерируем фейковые предметы для ленты
+    // Генерируем ленту
     let itemsHtml = '';
-    for(let i=0; i<30; i++) {
-        itemsHtml += `<div class="roulette-item"><img src="assets/item_car.png"></div>`;
+    // Массив картинок для "мусора" в рулетке
+    const randomImgs = ['item_car.png', 'item_money.png']; 
+
+    for(let i=0; i<45; i++) {
+        const rnd = randomImgs[Math.floor(Math.random() * randomImgs.length)];
+        itemsHtml += `<div class="roulette-item"><img src="assets/${rnd}"></div>`;
     }
-    // 25-й элемент - наш выигрыш
+    // 35-й элемент - выигрыш
     itemsHtml += `<div class="roulette-item" id="winner-card"><img src="assets/${wonItem.img}"></div>`;
-    // Еще немного фейков
+    
     for(let i=0; i<5; i++) {
-        itemsHtml += `<div class="roulette-item"><img src="assets/item_money.png"></div>`;
+        const rnd = randomImgs[Math.floor(Math.random() * randomImgs.length)];
+        itemsHtml += `<div class="roulette-item"><img src="assets/${rnd}"></div>`;
     }
     track.innerHTML = itemsHtml;
 
-    // Запуск прокрутки (CSS hack)
+    // Считаем смещение
+    // 90px ширина + 10px отступ = 100px на элемент
+    // Хотим 35-й элемент по центру
     setTimeout(() => {
-        const cardWidth = 110; // ширина карточки + марджин
-        // Смещаем так, чтобы winner-card встал по центру
-        // 30 карточек до него * 110 = 3300px + половина экрана
-        const offset = (30 * cardWidth) - (window.innerWidth / 2) + (cardWidth / 2);
+        const itemWidth = 100;
+        // Смещаем на 35 элементов минус половина экрана
+        const offset = (35 * itemWidth) - (window.innerWidth / 2) + (itemWidth / 2);
         
-        track.style.transition = 'transform 4s cubic-bezier(0.1, 1, 0.1, 1)'; // Плавное замедление
+        track.style.transition = 'transform 5s cubic-bezier(0.15, 0.9, 0.3, 1)'; // Плавная остановка
         track.style.transform = `translateX(-${offset}px)`;
-    }, 100);
+        
+        // Звуки "тыр-тыр" можно добавить сюда через tg.HapticFeedback.selectionChanged() в цикле
+    }, 50);
 
-    // Показ результата
     setTimeout(() => {
         isSpinning = false;
         showWinScreen(wonItem);
-        updateUI();
-    }, 4500);
+        tg.HapticFeedback.notificationOccurred('success'); // Вибрация успеха
+    }, 5500);
 }
 
 function showWinScreen(item) {
     document.getElementById('win-message').classList.remove('hidden');
     document.getElementById('win-name').innerText = item.name;
     document.getElementById('win-img').src = `assets/${item.img}`;
-    
-    // Вибрация телефона (Haptic Feedback)
-    tg.HapticFeedback.notificationOccurred('success');
 }
 
 function closeOpenScreen() {
     document.getElementById('open-screen').classList.add('hidden');
 }
 
-// 4. РАСПЫЛЕНИЕ (Пример функции, нужно доработать передачу ID предмета)
 function sellLastItem() {
-    alert('Предмет распылен! (Демо)');
+    // Демо
+    tg.showAlert('Предмет продан за ' + Math.floor(Math.random()*500));
     closeOpenScreen();
-    // Тут нужно сделать fetch запрос на /api/sell
-}
-
-function showScreen(id) {
-    // Переключение экранов
 }

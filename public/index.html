@@ -3,73 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Black Russia Cases</title>
+    <title>BR Case Simulator</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Шрифт Montserrat (как в игре) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Экран загрузки -->
-    <div id="splash-screen">
-        <div class="loader"></div>
-        <h2>ЗАГРУЗКА...</h2>
+    <!-- ЭКРАН 1: ПРИВЕТСТВИЕ (С твоей фоткой) -->
+    <div id="welcome-screen">
+        <div class="bg-overlay"></div>
+        <div class="content">
+            <h1 class="main-title">BLACK<br><span>RUSSIA</span></h1>
+            <p class="subtitle">Испытай удачу и выиграй призы!</p>
+            <button class="start-btn" onclick="startGame()">НАЧАТЬ ОТКРЫВАТЬ</button>
+        </div>
     </div>
 
-    <!-- Основное приложение -->
-    <div id="app" style="display: none;">
+    <!-- ЭКРАН 2: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+    <div id="app" class="hidden">
         
         <!-- Шапка -->
         <header>
-            <div class="user-info">
-                <span id="username">Loading...</span>
-                <div class="balance">
-                    <span id="balance">0</span> BC
-                </div>
+            <div class="logo">BR CASE</div>
+            <div class="balance-box">
+                <span id="balance">0</span> BC
             </div>
         </header>
 
-        <!-- Главный экран: Выбор кейсов -->
+        <div class="user-hello">
+            Привет, <span id="username">Игрок</span>!
+        </div>
+
+        <!-- Список кейсов -->
         <main id="main-screen">
-            <h3>КЕЙСЫ</h3>
-            <div class="cases-container">
+            <div class="cases-grid">
                 <!-- Кейс 1 -->
-                <div class="case-card" onclick="openCaseMenu('novice')">
-                    <img src="assets/case_common.png" alt="Case">
-                    <div class="case-title">НОВИЧОК</div>
-                    <div class="case-price">1000 BC</div>
+                <div class="case-card common" onclick="openCaseMenu('novice')">
+                    <div class="case-badge">ОБЫЧНЫЙ</div>
+                    <img src="assets/case_common.png" alt="Кейс" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9329/9329733.png'">
+                    <div class="case-info">
+                        <div class="case-name">НОВИЧОК</div>
+                        <div class="case-price">1000 BC</div>
+                    </div>
                 </div>
                 <!-- Кейс 2 -->
                 <div class="case-card rare" onclick="openCaseMenu('rich')">
-                    <img src="assets/case_rare.png" alt="Case">
-                    <div class="case-title">ОСОБЫЙ</div>
-                    <div class="case-price">5000 BC</div>
+                    <div class="case-badge red">VIP</div>
+                    <img src="assets/case_rare.png" alt="Кейс" onerror="this.src='https://cdn-icons-png.flaticon.com/512/9329/9329733.png'">
+                    <div class="case-info">
+                        <div class="case-name">ОСОБЫЙ</div>
+                        <div class="case-price text-red">5000 BC</div>
+                    </div>
                 </div>
             </div>
         </main>
 
-        <!-- Экран анимации открытия -->
+        <!-- Анимация открытия (Рулетка) -->
         <div id="open-screen" class="hidden">
-            <div class="roulette-container">
-                <div id="roulette-track" class="roulette-track">
-                    <!-- Сюда JS вставит предметы -->
+            <div class="roulette-wrapper">
+                <div class="arrow-down">▼</div>
+                <div class="roulette-window">
+                    <div id="roulette-track"></div>
                 </div>
-                <div class="roulette-marker"></div>
             </div>
+
+            <!-- Окно выигрыша -->
             <div id="win-message" class="hidden">
-                <h2>ТВОЙ ПРИЗ!</h2>
+                <div class="win-light"></div>
+                <h2>ТВОЙ КУШ!</h2>
                 <img id="win-img" src="" alt="">
                 <h3 id="win-name">...</h3>
                 <div class="actions">
                     <button class="btn btn-red" onclick="closeOpenScreen()">ЗАБРАТЬ</button>
-                    <button class="btn btn-black" onclick="sellLastItem()">РАСПЫЛИТЬ</button>
+                    <button class="btn btn-dark" onclick="sellLastItem()">РАСПЫЛИТЬ</button>
                 </div>
             </div>
         </div>
 
-        <!-- Футер -->
+        <!-- Меню снизу -->
         <footer>
-            <button onclick="showScreen('main-screen')">ГЛАВНАЯ</button>
-            <button onclick="alert('Скоро...')">ИНВЕНТАРЬ</button>
+            <div class="nav-item active">ГЛАВНАЯ</div>
+            <div class="nav-item" style="opacity: 0.5;">ИНВЕНТАРЬ</div>
         </footer>
     </div>
 
