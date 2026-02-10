@@ -1,0 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+
+:root {
+    --bg-color: #0d0d0d;
+    --card-bg: #1a1a1a;
+    --red: #D20000;
+    --text: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text);
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden; /* Запрет скролла */
+    user-select: none;
+}
+
+/* ЗАГРУЗКА */
+#splash-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('../assets/bg.jpg') no-repeat center center/cover;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 50px;
+}
+.loader {
+    width: 40px; height: 40px;
+    border: 4px solid #fff;
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* HEADER */
+header {
+    padding: 15px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.balance {
+    color: var(--red);
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+/* MAIN */
+.cases-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 20px;
+}
+.case-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid #333;
+    transition: transform 0.1s;
+}
+.case-card:active { transform: scale(0.95); }
+.case-card img { width: 80%; margin-bottom: 10px; }
+.case-title { font-weight: 700; margin-bottom: 5px; }
+.case-price { color: #888; font-size: 0.9rem; }
+.rare { border: 1px solid var(--red); box-shadow: 0 0 10px rgba(210,0,0,0.3); }
+
+/* РУЛЕТКА */
+#open-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.roulette-container {
+    width: 100%;
+    height: 120px;
+    background: #111;
+    overflow: hidden;
+    position: relative;
+    border-top: 2px solid var(--red);
+    border-bottom: 2px solid var(--red);
+}
+.roulette-track {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    /* Анимация будет через JS */
+}
+.roulette-item {
+    min-width: 100px;
+    height: 90px;
+    margin: 0 5px;
+    background: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+}
+.roulette-item img { width: 60px; }
+.roulette-marker {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 4px; height: 100%;
+    background: #fff;
+    z-index: 10;
+}
+
+/* ПОБЕДА */
+#win-message {
+    margin-top: 30px;
+    text-align: center;
+    animation: popIn 0.3s ease;
+}
+#win-img { width: 150px; margin: 20px 0; filter: drop-shadow(0 0 15px var(--red)); }
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 900;
+    margin: 5px;
+    cursor: pointer;
+}
+.btn-red { background: var(--red); color: #fff; }
+.btn-black { background: #333; color: #fff; }
+
+.hidden { display: none !important; }
+
+@keyframes popIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+footer {
+    position: fixed;
+    bottom: 0; width: 100%;
+    background: #111;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+}
+footer button {
+    background: none; border: none; color: #666; font-weight: 700;
+}
